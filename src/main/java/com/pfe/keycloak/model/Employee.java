@@ -1,7 +1,6 @@
 package com.pfe.keycloak.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import com.pfe.keycloak.dto.SignUpDto;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -10,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -43,30 +42,43 @@ public class Employee {
     @Nullable
     private List<Competences> competences;
 
-    @OneToMany(mappedBy = "employee",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     @Nullable
     @JsonManagedReference
     private List<Experience> experiences;
 
-    @OneToMany(mappedBy = "employee",cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     @Nullable
     @JsonManagedReference
     private List<Evaluation> evaluations;
 
-    @OneToMany(mappedBy = "employee",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     @Nullable
     @JsonManagedReference
     private List<PlanDeDeveloppement> planDeDeveloppements;
 
-    @OneToMany(mappedBy = "employee",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     @Nullable
     @JsonManagedReference
     private List<Formation> formations;
 
-    @OneToMany(mappedBy = "employee",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     @Nullable
     @JsonManagedReference
     private List<Certification> certifications;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<WorkSchedule> workSchedules;
+
+    public Employee(SignUpDto signUpDto) {
+        this.nom = signUpDto.getLastname();
+        this.prenom = signUpDto.getFirstname();
+        this.email = signUpDto.getEmail();
+        this.sexe = signUpDto.getGender();
+        this.dateNaissance = signUpDto.getBirthDate();
+        this.telephone = signUpDto.getPhoneNumber();
+    }
 
     public void addFormation(Formation formation) {
         assert this.formations != null;
@@ -99,6 +111,7 @@ public class Employee {
         }
         return null;
     }
+
     public void removeCertificationById(Long id) {
         try {
             assert this.certifications != null;
@@ -233,12 +246,18 @@ public class Employee {
         return null;
     }
 
-    public Employee(SignUpDto signUpDto) {
-        this.nom = signUpDto.getLastname();
-        this.prenom = signUpDto.getFirstname();
-        this.email = signUpDto.getEmail();
-        this.sexe = signUpDto.getGender();
-        this.dateNaissance = signUpDto.getBirthDate();
-        this.telephone = signUpDto.getPhoneNumber();
+    public void addWorkSchedule(WorkSchedule workSchedule) {
+        if (this.workSchedules == null) {
+            this.workSchedules = new ArrayList<>();
+        }
+        this.workSchedules.add(workSchedule);
+        workSchedule.setEmployee(this);
     }
+
+    public void removeWorkSchedule(WorkSchedule workSchedule) {
+        if (this.workSchedules != null) {
+            this.workSchedules.remove(workSchedule);
+        }
+    }
+
 }

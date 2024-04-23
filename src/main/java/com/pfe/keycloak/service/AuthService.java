@@ -15,6 +15,8 @@ public interface AuthService {
     public List<UserRepresentation> getAllUsers();
     public ResponseEntity<?> resetPassword(String username, String newPassword);
     public ResponseEntity<?> resetPasswordRequest(String username);
-    public ResponseEntity<?> setPinForUser(String username, String pin);
-    public boolean checkPinForUser(String username, String pin);
+    public Boolean setPinForUser(String username, String pin);
+    public ResponseEntity<?> checkPinForUser(String username, String pin);
+    public Boolean isPinExist(String username);
+    public Boolean isAccountLocked(String username);
 }

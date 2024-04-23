@@ -27,45 +27,40 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AuthServiceImpl implements AuthService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthServiceImpl.class);
-    private WebClient webClient;
     private final WebClient.Builder webClientBuilder;
     private final String tokenUrl;
-
-    @Value("${keycloak.realm}")
-    private String realm;
-
-    @Value("${keycloak.auth-server-url}")
-    private String authServerUrl;
-
-    @Value("${keycloak.client-id}")
-    private String clientId;
-
-    @Value("${keycloak.client-sercret}")
-    private String clientSecret;
-
-    @Value("${keycloak.admin-username}")
-    private String adminUsername;
-
-    @Value("${keycloak.admin-password}")
-    private String adminPassword;
-
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     @Autowired
     EmployeeRepository employeeRepository;
-
+    private WebClient webClient;
+    @Value("${keycloak.realm}")
+    private String realm;
+    @Value("${keycloak.auth-server-url}")
+    private String authServerUrl;
+    @Value("${keycloak.client-id}")
+    private String clientId;
+    @Value("${keycloak.client-sercret}")
+    private String clientSecret;
+    @Value("${keycloak.admin-username}")
+    private String adminUsername;
+    @Value("${keycloak.admin-password}")
+    private String adminPassword;
     @Autowired
     private JavaMailSender emailSender;
 
@@ -79,32 +74,18 @@ public class AuthServiceImpl implements AuthService {
         this.webClient = this.webClientBuilder.baseUrl(this.tokenUrl).build();
     }
 
+    public Keycloak keycloakAdminConnection() {
+        return KeycloakBuilder.builder().serverUrl(authServerUrl).grantType(OAuth2Constants.PASSWORD).realm(realm).clientId(clientId).clientSecret(clientSecret).username(adminUsername).password(adminPassword).resteasyClient(new ResteasyClientBuilderImpl().connectionPoolSize(10).build()).build();
+    }
+
     public Mono<String> login(String username, String password) {
-        return webClient.post().uri(tokenUrl)
-                .headers(headers -> headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .body(BodyInserters.fromFormData("grant_type", "password")
-                        .with("client_id", "employee")
-                        .with("client_secret", "bFnv64BYcBpkoGGX0rWbCpup0c5yy6Ba")
-                        .with("username", username)
-                        .with("password", password))
-                .retrieve()
-                .bodyToMono(String.class)
-                .onErrorResume(e -> Mono.just("{\"error\": \"invalid_grant\", \"error_description\": \"Invalid user credentials\"}"));
+        return webClient.post().uri(tokenUrl).headers(headers -> headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED)).body(BodyInserters.fromFormData("grant_type", "password").with("client_id", "employee").with("client_secret", "bFnv64BYcBpkoGGX0rWbCpup0c5yy6Ba").with("username", username).with("password", password)).retrieve().bodyToMono(String.class).onErrorResume(e -> Mono.just("{\"error\": \"invalid_grant\", \"error_description\": \"Invalid user credentials\"}"));
     }
 
     @Override
     public ResponseEntity<?> signUp(SignUpDto signUpDto) {
         LOGGER.info("signUp... {}", signUpDto);
-        Keycloak keycloak = KeycloakBuilder.builder()
-                .serverUrl(authServerUrl)
-                .grantType(OAuth2Constants.PASSWORD)
-                .realm("employee")
-                .clientId("employee")
-                .clientSecret("bFnv64BYcBpkoGGX0rWbCpup0c5yy6Ba")
-                .username(adminUsername)
-                .password(adminPassword)
-                .resteasyClient(new ResteasyClientBuilderImpl().connectionPoolSize(10).build())
-                .build();
+        Keycloak keycloak = keycloakAdminConnection();
 
         keycloak.tokenManager().getAccessToken();
 
@@ -114,6 +95,9 @@ public class AuthServiceImpl implements AuthService {
         user.setFirstName(signUpDto.getFirstname());
         user.setLastName(signUpDto.getLastname());
         user.setEmail(signUpDto.getEmail());
+        Map<String, List<String>> attributes = new HashMap<>();
+        attributes.put("lockStatus", List.of("unlocked"));
+        user.setAttributes(attributes);
 
         RealmResource realmResource = keycloak.realm(realm);
         UsersResource usersResource = realmResource.users();
@@ -133,11 +117,11 @@ public class AuthServiceImpl implements AuthService {
             UserResource userResource = usersResource.get(userId);
             userResource.resetPassword(passwordCred);
 
-            // Fetch the client by clientId ("employee")
+
             ClientRepresentation client = realmResource.clients().findByClientId("employee").get(0);
-            // Assuming the client is found, fetch the HR role
+
             RoleRepresentation hrRole = realmResource.clients().get(client.getId()).roles().get("HR").toRepresentation();
-            // Assign the HR role to the user
+
             userResource.roles().clientLevel(client.getId()).add(Collections.singletonList(hrRole));
 
             Employee employee = new Employee(signUpDto);
@@ -149,26 +133,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public Mono<String> obtainAdminToken() {
-        return webClient.post().uri("http://localhost:8080/realms/employee/protocol/openid-connect/token")
-                .body(BodyInserters.fromFormData("grant_type", "client_credentials")
-                        .with("client_id", "employee")
-                        .with("client_secret", "bFnv64BYcBpkoGGX0rWbCpup0c5yy6Ba"))
-                .retrieve()
-                .bodyToMono(TokenResponse.class)
-                .map(TokenResponse::getAccess_token);
+        return webClient.post().uri("http://localhost:8080/realms/employee/protocol/openid-connect/token").body(BodyInserters.fromFormData("grant_type", "client_credentials").with("client_id", "employee").with("client_secret", clientSecret)).retrieve().bodyToMono(TokenResponse.class).map(TokenResponse::getAccess_token);
     }
 
     public List<UserRepresentation> getAllUsers() {
-        Keycloak keycloak = KeycloakBuilder.builder()
-                .serverUrl(authServerUrl)
-                .grantType(OAuth2Constants.PASSWORD)
-                .realm("employee")
-                .clientId("employee")
-                .clientSecret("bFnv64BYcBpkoGGX0rWbCpup0c5yy6Ba")
-                .username(adminUsername)
-                .password(adminPassword)
-                .resteasyClient(new ResteasyClientBuilderImpl().connectionPoolSize(10).build())
-                .build();
+        Keycloak keycloak = keycloakAdminConnection();
 
         keycloak.tokenManager().getAccessToken();
 
@@ -180,16 +149,7 @@ public class AuthServiceImpl implements AuthService {
 
     public ResponseEntity<?> resetPassword(String username, String newPassword) {
         try {
-            Keycloak keycloak = KeycloakBuilder.builder()
-                    .serverUrl(authServerUrl)
-                    .grantType(OAuth2Constants.PASSWORD)
-                    .realm("employee")
-                    .clientId("employee")
-                    .clientSecret("bFnv64BYcBpkoGGX0rWbCpup0c5yy6Ba")
-                    .username(adminUsername)
-                    .password(adminPassword)
-                    .resteasyClient(new ResteasyClientBuilderImpl().connectionPoolSize(10).build())
-                    .build();
+            Keycloak keycloak = keycloakAdminConnection();
 
             keycloak.tokenManager().getAccessToken();
 
@@ -233,16 +193,7 @@ public class AuthServiceImpl implements AuthService {
 
     public ResponseEntity<?> resetPasswordRequest(String username) {
         try {
-            Keycloak keycloak = KeycloakBuilder.builder()
-                    .serverUrl(authServerUrl)
-                    .grantType(OAuth2Constants.PASSWORD)
-                    .realm("employee")
-                    .clientId("employee")
-                    .clientSecret("bFnv64BYcBpkoGGX0rWbCpup0c5yy6Ba")
-                    .username(adminUsername)
-                    .password(adminPassword)
-                    .resteasyClient(new ResteasyClientBuilderImpl().connectionPoolSize(10).build())
-                    .build();
+            Keycloak keycloak = keycloakAdminConnection();
 
             keycloak.tokenManager().getAccessToken();
 
@@ -268,20 +219,9 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-    public ResponseEntity<?> setPinForUser(String username, String pin) {
+    public Boolean setPinForUser(String username, String pin) {
         try {
-            Keycloak keycloak = KeycloakBuilder.builder()
-                    .serverUrl(authServerUrl)
-                    .grantType(OAuth2Constants.PASSWORD)
-                    .realm(realm)
-                    .clientId(clientId)
-                    .clientSecret(clientSecret)
-                    .username(adminUsername)
-                    .password(adminPassword)
-                    .resteasyClient(new ResteasyClientBuilderImpl().connectionPoolSize(10).build())
-                    .build();
+            Keycloak keycloak = keycloakAdminConnection();
 
             UsersResource usersResource = keycloak.realm(realm).users();
             List<UserRepresentation> keycloakUsers = usersResource.search(username, true);
@@ -298,51 +238,56 @@ public class AuthServiceImpl implements AuthService {
             user.singleAttribute("hashedPin", hashedPin);
             userResource.update(user);
 
-            return ResponseEntity.ok().body("PIN set successfully for user: " + username);
+
         } catch (Exception e) {
             LOGGER.error("Error setting PIN for user: {}, Error: {}", username, e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error setting PIN for user: " + username);
         }
+        return isPinExist(username);
     }
 
-    public boolean checkPinForUser(String username, String pin) {
-        try {
-            Keycloak keycloak = KeycloakBuilder.builder()
-                    .serverUrl(authServerUrl)
-                    .grantType(OAuth2Constants.PASSWORD)
-                    .realm("employee")
-                    .clientId("employee")
-                    .clientSecret(clientSecret)
-                    .username("adminUsername")
-                    .password("adminPassword")
-                    .build();
 
+    public ResponseEntity<?> checkPinForUser(String username, String pin) {
+        try {
+            Keycloak keycloak = keycloakAdminConnection();
             UsersResource usersResource = keycloak.realm(realm).users();
             List<UserRepresentation> users = usersResource.search(username);
 
             if (users.isEmpty()) {
-                throw new Exception("User not found");
+                return ResponseEntity.status(404).body(Map.of("error", "User not found"));
             }
 
             UserRepresentation user = users.get(0);
-            String hashedPin = user.getAttributes().get("hashedPin").get(0);
-            return passwordEncoder.matches(pin, hashedPin);
+            List<String> attemptsList = user.getAttributes().get("wrongAttempts");
+            int wrongAttempts = attemptsList != null && !attemptsList.isEmpty() ? Integer.parseInt(attemptsList.get(0)) : 0;
 
+            String hashedPin = user.getAttributes().get("hashedPin").get(0);
+
+            if (passwordEncoder.matches(pin, hashedPin)) {
+
+                user.getAttributes().put("wrongAttempts", List.of("0"));
+                usersResource.get(user.getId()).update(user);
+                return ResponseEntity.ok(Collections.singletonMap("status", "correct"));
+            } else {
+
+                wrongAttempts++;
+                user.getAttributes().put("wrongAttempts", List.of(String.valueOf(wrongAttempts)));
+                usersResource.get(user.getId()).update(user);
+
+                if (wrongAttempts < 4) {
+                    return ResponseEntity.ok(Collections.singletonMap("status", "pending"));
+                } else {
+                    return ResponseEntity.ok(Collections.singletonMap("status", "block"));
+                }
+            }
         } catch (Exception e) {
-            return false;
+
+            return ResponseEntity.status(500).body(Map.of("error", "An error occurred"));
         }
     }
-    public Boolean checkIfPinExist(String username) {
+
+    public Boolean isPinExist(String username) {
         try {
-            Keycloak keycloak = KeycloakBuilder.builder()
-                    .serverUrl(authServerUrl)
-                    .grantType(OAuth2Constants.PASSWORD)
-                    .realm(realm)
-                    .clientId(clientId)
-                    .clientSecret(clientSecret)
-                    .username(adminUsername)
-                    .password(adminPassword)
-                    .build();
+            Keycloak keycloak = keycloakAdminConnection();
 
             UsersResource usersResource = keycloak.realm(realm).users();
             List<UserRepresentation> users = usersResource.search(username);
@@ -358,4 +303,34 @@ public class AuthServiceImpl implements AuthService {
             return false;
         }
     }
+
+    public Boolean isAccountLocked(String username) {
+        try {
+            Keycloak keycloak = keycloakAdminConnection();
+
+            UsersResource usersResource = keycloak.realm(realm).users();
+            List<UserRepresentation> users = usersResource.search(username);
+
+            if (users.isEmpty()) {
+
+                throw new Exception("User not found");
+            }
+
+            UserRepresentation user = users.get(0);
+
+            if (user.getAttributes() != null && user.getAttributes().containsKey("accountStatus")) {
+
+                String accountStatus = user.getAttributes().get("accountStatus").get(0);
+
+                return "locked".equals(accountStatus);
+            }
+
+
+            return false;
+        } catch (Exception e) {
+
+            return false;
+        }
+    }
+
 }

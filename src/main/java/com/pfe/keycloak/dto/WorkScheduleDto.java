@@ -21,7 +21,7 @@ public class WorkScheduleDto {
 
     private Long id;
 
-    private Employee employee;
+    private Long employee;
 
     private Date workDate;
 

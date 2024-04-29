@@ -1,5 +1,6 @@
 package com.pfe.keycloak.service;
 
+import com.pfe.keycloak.dto.WorkScheduleDto;
 import com.pfe.keycloak.model.WorkSchedule;
 
 import java.util.Date;
@@ -7,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WorkScheduleService {
-    WorkSchedule saveWorkSchedule(WorkSchedule workSchedule);
+    WorkSchedule saveWorkSchedule(WorkScheduleDto workSchedule);
 
     List<WorkSchedule> getWorkSchedulesByEmployeeId(Long employeeId);
 

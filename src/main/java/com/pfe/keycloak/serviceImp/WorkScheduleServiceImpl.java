@@ -1,6 +1,9 @@
 package com.pfe.keycloak.serviceImp;
 
+import com.pfe.keycloak.dto.WorkScheduleDto;
+import com.pfe.keycloak.model.Employee;
 import com.pfe.keycloak.model.WorkSchedule;
+import com.pfe.keycloak.repository.EmployeeRepository;
 import com.pfe.keycloak.repository.WorkScheduleRepository;
 import com.pfe.keycloak.service.WorkScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +19,18 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
 
     @Autowired
     private WorkScheduleRepository workScheduleRepository;
+    @Autowired
+    private EmployeeRepository employeeRepository;
 
 
     @Transactional
-    public WorkSchedule saveWorkSchedule(WorkSchedule workSchedule) {
+    public WorkSchedule saveWorkSchedule(WorkScheduleDto workScheduleDto) {
+        Employee employee = employeeRepository.findById(workScheduleDto.getEmployee())
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        WorkSchedule workSchedule = new WorkSchedule(workScheduleDto, employee);
+        employee.addWorkSchedule(workSchedule);
+        employeeRepository.save(employee);
+
         return workScheduleRepository.save(workSchedule);
     }
 

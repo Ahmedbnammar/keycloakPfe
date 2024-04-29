@@ -79,7 +79,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public Mono<String> login(String username, String password) {
-        return webClient.post().uri(tokenUrl).headers(headers -> headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED)).body(BodyInserters.fromFormData("grant_type", "password").with("client_id", "employee").with("client_secret", "bFnv64BYcBpkoGGX0rWbCpup0c5yy6Ba").with("username", username).with("password", password)).retrieve().bodyToMono(String.class).onErrorResume(e -> Mono.just("{\"error\": \"invalid_grant\", \"error_description\": \"Invalid user credentials\"}"));
+        return webClient.post().uri(tokenUrl).headers(headers -> headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .body(BodyInserters.fromFormData("grant_type", "password")
+                        .with("client_id", "employee").with("client_secret", "bFnv64BYcBpkoGGX0rWbCpup0c5yy6Ba")
+                        .with("username", username).with("password", password))
+                .retrieve().bodyToMono(String.class)
+                .onErrorResume(e -> Mono.just("{\"error\": \"invalid_grant\", \"error_description\": \"Invalid user credentials\"}"));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.pfe.keycloak.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.smallrye.common.constraint.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PlanDeDeveloppementDto {
+    @NotNull
     private Long id;
     private String code;
     private String objectif;

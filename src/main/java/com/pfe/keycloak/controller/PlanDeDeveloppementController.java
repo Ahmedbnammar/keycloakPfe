@@ -4,6 +4,7 @@ import com.pfe.keycloak.dto.PlanDeDeveloppementDto;
 import com.pfe.keycloak.model.PlanDeDeveloppement;
 import com.pfe.keycloak.service.PlanDeDeveloppementService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,38 +14,37 @@ public class PlanDeDeveloppementController {
     @Autowired
     private PlanDeDeveloppementService planDeDeveloppementService;
 
-    @PostMapping("/add")
-    public PlanDeDeveloppement addPlanDeDeveloppement(@PathVariable Long id,@RequestBody PlanDeDeveloppementDto planDeDeveloppement)
-    {
-        return planDeDeveloppementService.addPlanDeDeveloppement(id,planDeDeveloppement);
+    @PostMapping
+    ResponseEntity<PlanDeDeveloppement> addPlanDeDeveloppement(@PathVariable Long id, @RequestBody PlanDeDeveloppementDto planDeDeveloppement) {
+        return ResponseEntity.ok(planDeDeveloppementService.addPlanDeDeveloppement(id, planDeDeveloppement));
 
 
     }
+
     @PutMapping("/update")
-    public PlanDeDeveloppement updatePlanDeDeveloppement(@PathVariable Long id,@RequestBody PlanDeDeveloppementDto planDeDeveloppement)
-    {
-        return planDeDeveloppementService.updatePlanDeDeveloppement(id,planDeDeveloppement);
+    ResponseEntity<PlanDeDeveloppement> updatePlanDeDeveloppement(@PathVariable Long id, @RequestBody PlanDeDeveloppementDto planDeDeveloppement) {
+        return ResponseEntity.ok(planDeDeveloppementService.updatePlanDeDeveloppement(id, planDeDeveloppement));
 
 
     }
-    @DeleteMapping("/delete/{id}")
-    public void deletePlanDeDeveloppement(@PathVariable Long id)
-    {
-        planDeDeveloppementService.removePlanDeDeveloppement(id);
+
+    @DeleteMapping("/delete/{matricule}")
+    ResponseEntity<Void> deletePlanDeDeveloppement(@PathVariable Long matricule) {
+        planDeDeveloppementService.removePlanDeDeveloppement(matricule);
+        return ResponseEntity.ok().build();
+
+    }
+
+    @GetMapping("/find/{matricule}")
+    ResponseEntity<PlanDeDeveloppement> findPlanDeDeveloppement(@PathVariable Long matricule) {
+        return ResponseEntity.ok( planDeDeveloppementService.findPlanDeDeveloppement(matricule));
 
 
     }
-    @GetMapping("/find/{id}")
-    public PlanDeDeveloppement findPlanDeDeveloppement(@PathVariable Long id)
-    {
-        return planDeDeveloppementService.findPlanDeDeveloppement(id);
 
-
-    }
     @GetMapping("/findall")
-    public Iterable<PlanDeDeveloppement> findAllPlanDeDeveloppement(@PathVariable Long id)
-    {
-        return planDeDeveloppementService.findAllPlanDeDeveloppement(id);
+    public  ResponseEntity<Iterable<PlanDeDeveloppement>> findAllPlanDeDeveloppement(@PathVariable Long id) {
+        return ResponseEntity.ok(planDeDeveloppementService.findAllPlanDeDeveloppement(id));
 
 
     }

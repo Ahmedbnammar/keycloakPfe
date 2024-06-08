@@ -19,6 +19,7 @@ import java.util.Date;
 public class PlanDeDeveloppement {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String code;
     private String objectif;

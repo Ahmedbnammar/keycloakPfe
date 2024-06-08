@@ -6,8 +6,11 @@ import com.pfe.keycloak.model.PlanDeDeveloppement;
 import com.pfe.keycloak.repository.EmployeeRepository;
 import com.pfe.keycloak.repository.PlanDeDeveloppementRepository;
 import com.pfe.keycloak.service.PlanDeDeveloppementService;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class PlanDeDeveloppementServiceImpl implements PlanDeDeveloppementService {
@@ -19,14 +22,17 @@ public class PlanDeDeveloppementServiceImpl implements PlanDeDeveloppementServic
     public PlanDeDeveloppement addPlanDeDeveloppement(Long id, PlanDeDeveloppementDto planDeDeveloppement) {
         Employee employee = employeeRepository.findById(id).orElseThrow(() ->
                 new RuntimeException("Employee not found for matricule: \"" + id + "\"")
+
         );
         PlanDeDeveloppement planDeDeveloppement1 = new PlanDeDeveloppement();
         planDeDeveloppement1.setActions(planDeDeveloppement.getActions());
         planDeDeveloppement1.setCode(planDeDeveloppement.getCode());
         planDeDeveloppement1.setDateFin(planDeDeveloppement.getDateFin());
         planDeDeveloppement1.setDateDebut(planDeDeveloppement.getDateDebut());
+        planDeDeveloppement1.setObjectif(planDeDeveloppement.getObjectif());
         planDeDeveloppement1.setEmployee(employee);
         employee.addPlanDeDeveloppement(planDeDeveloppement1);
+        employeeRepository.save(employee);
         return planDeDeveloppementRepository.save(planDeDeveloppement1);
 
     }
@@ -36,7 +42,10 @@ public class PlanDeDeveloppementServiceImpl implements PlanDeDeveloppementServic
         Employee employee = employeeRepository.findById(id).orElseThrow(() ->
                 new RuntimeException("Employee not found for matricule: \"" + id + "\"")
         );
-        PlanDeDeveloppement planDeDeveloppement1 = planDeDeveloppementRepository.findById(planDeDeveloppement.getId());
+        Optional<PlanDeDeveloppement> optionalPlan = planDeDeveloppementRepository.findById(planDeDeveloppement.getId());
+        assert optionalPlan.isPresent();
+        PlanDeDeveloppement planDeDeveloppement1 = optionalPlan.get();
+
         planDeDeveloppement1.setActions(planDeDeveloppement.getActions());
         planDeDeveloppement1.setCode(planDeDeveloppement.getCode());
         planDeDeveloppement1.setDateFin(planDeDeveloppement.getDateFin());

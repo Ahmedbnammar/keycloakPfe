@@ -57,7 +57,6 @@ public class EvaluationServiceImpl implements EvaluationService {
 
     @Override
     public List<Evaluation> getAllEvaluations() {
-        // Logic to fetch all evaluations
         return evaluationRepository.findAll();
     }
 

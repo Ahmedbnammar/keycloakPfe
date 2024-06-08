@@ -1,9 +1,11 @@
 package com.pfe.keycloak.controller;
 
+import com.pfe.keycloak.dto.CompetenceDto;
 import com.pfe.keycloak.model.Competences;
 import com.pfe.keycloak.service.CompetencesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +18,7 @@ public class CompetencesController {
     private CompetencesService competencesService;
 
     @PostMapping
-    public ResponseEntity<Competences> createCompetence(@RequestBody Competences competence) {
+    public ResponseEntity<Competences> createCompetence(@RequestBody CompetenceDto competence) {
         return ResponseEntity.ok(competencesService.createCompetence(competence));
     }
 
@@ -25,14 +27,30 @@ public class CompetencesController {
         return ResponseEntity.ok(competencesService.getCompetenceById(id));
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<Competences>> getAllCompetences() {
         return ResponseEntity.ok(competencesService.getAllCompetences());
     }
 
-    @PutMapping
+   /* @PutMapping
     public ResponseEntity<Competences> updateCompetence(@RequestBody Competences competence) {
         return ResponseEntity.ok(competencesService.updateCompetence(competence));
+    }*/
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Competences> updateCompetence(@PathVariable Long id, @RequestBody Competences newCompetenceData) {
+        Competences existingCompetence = competencesService.getCompetenceById(id);
+        if (existingCompetence == null) {
+            return ResponseEntity.notFound().build();
+        }
+        existingCompetence.setCode(newCompetenceData.getCode());
+        existingCompetence.setNom(newCompetenceData.getNom());
+        existingCompetence.setDescription(newCompetenceData.getDescription());
+        existingCompetence.setLevel(newCompetenceData.getLevel());
+
+        Competences updatedCompetence = competencesService.updateCompetence(existingCompetence);
+
+        return ResponseEntity.ok(updatedCompetence);
     }
 
     @DeleteMapping("/{id}")

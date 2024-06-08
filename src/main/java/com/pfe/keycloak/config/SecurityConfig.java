@@ -1,6 +1,5 @@
 package com.pfe.keycloak.config;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableWebSecurity
@@ -18,6 +18,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthConverter jwtAuthConverter;
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -28,14 +33,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/auth/login").permitAll()
-                                .requestMatchers("/auth/signup").permitAll()
-                                .requestMatchers("/employee/all").permitAll()
-                                .requestMatchers("/employee/{id}").permitAll()
-                                .requestMatchers("/employee/update/{employeeId}").permitAll()
-                                .requestMatchers("/employee/{employeeId}").permitAll()
-                                .requestMatchers("/auth/reset-password-request").permitAll()
-                                .anyRequest().authenticated()
+                                .anyRequest().permitAll()  // Allow all requests for testing
                 )
                 .oauth2ResourceServer()
                 .jwt()

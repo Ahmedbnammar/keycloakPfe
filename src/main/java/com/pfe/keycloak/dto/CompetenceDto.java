@@ -15,4 +15,5 @@ public class CompetenceDto {
     private String code;
     private String nom;
     private String description;
+    private int level;
 }

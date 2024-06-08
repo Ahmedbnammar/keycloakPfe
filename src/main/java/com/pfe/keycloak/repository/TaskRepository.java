@@ -1,9 +1,9 @@
 package com.pfe.keycloak.repository;
 
-import com.pfe.keycloak.model.Experience;
+import com.pfe.keycloak.model.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ExperienceRepository extends JpaRepository<Experience, Long> {
+public interface TaskRepository extends JpaRepository<Task, Long> {
 }

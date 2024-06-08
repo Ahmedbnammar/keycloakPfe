@@ -74,7 +74,6 @@ public class EvaluationServiceImpl implements EvaluationService {
 
     @Override
     public void deleteEvaluation(Long id) {
-        // Logic to delete an evaluation
         evaluationRepository.deleteById(id);
     }
 }

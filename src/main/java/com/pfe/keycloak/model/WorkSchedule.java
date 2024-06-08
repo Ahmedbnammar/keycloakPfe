@@ -1,7 +1,9 @@
 package com.pfe.keycloak.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.pfe.keycloak.dto.WorkScheduleDto;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,13 +12,13 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
-import java.util.Map;
+import java.util.List;
 
+@Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 @Table(name = "work_schedules")
 public class WorkSchedule {
     @Id
@@ -33,22 +35,19 @@ public class WorkSchedule {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private Date workDate;
 
-    @ElementCollection
-    @CollectionTable(name = "task_entries", joinColumns = {@JoinColumn(name = "schedule_id")})
-    @MapKeyColumn(name = "hour")
-    @Column(name = "task")
-    private Map<String, String> tasks;
+    @OneToMany(mappedBy = "workSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Task> tasks;
+
+    @Enumerated(EnumType.STRING)
+    @Nullable
+    private Enum.TaskStatus status;
 
     @Column(nullable = false)
-    private String status;
-
+    private int priority;
     public WorkSchedule(WorkScheduleDto workScheduleDto, Employee employee) {
-        this.id = workScheduleDto.getId();
-        this.workDate = workScheduleDto.getWorkDate();
-        this.tasks = workScheduleDto.getTasks();
-        this.status = workScheduleDto.getStatus();
         this.employee = employee;
+        this.workDate = workScheduleDto.getWorkDate();
+        this.priority = workScheduleDto.getPriority();
     }
-
-
 }

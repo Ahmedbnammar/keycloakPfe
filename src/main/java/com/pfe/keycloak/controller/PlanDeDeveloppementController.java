@@ -8,22 +8,22 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/{matricule}/planDeDeveloppement")
+@RequestMapping("/{id}/planDeDeveloppement")
 public class PlanDeDeveloppementController {
     @Autowired
     private PlanDeDeveloppementService planDeDeveloppementService;
 
     @PostMapping("/add")
-    public PlanDeDeveloppement addPlanDeDeveloppement(@PathVariable String matricule,@RequestBody PlanDeDeveloppementDto planDeDeveloppement)
+    public PlanDeDeveloppement addPlanDeDeveloppement(@PathVariable Long id,@RequestBody PlanDeDeveloppementDto planDeDeveloppement)
     {
-        return planDeDeveloppementService.addPlanDeDeveloppement(matricule,planDeDeveloppement);
+        return planDeDeveloppementService.addPlanDeDeveloppement(id,planDeDeveloppement);
 
 
     }
     @PutMapping("/update")
-    public PlanDeDeveloppement updatePlanDeDeveloppement(@PathVariable String matricule,@RequestBody PlanDeDeveloppementDto planDeDeveloppement)
+    public PlanDeDeveloppement updatePlanDeDeveloppement(@PathVariable Long id,@RequestBody PlanDeDeveloppementDto planDeDeveloppement)
     {
-        return planDeDeveloppementService.updatePlanDeDeveloppement(matricule,planDeDeveloppement);
+        return planDeDeveloppementService.updatePlanDeDeveloppement(id,planDeDeveloppement);
 
 
     }
@@ -42,9 +42,9 @@ public class PlanDeDeveloppementController {
 
     }
     @GetMapping("/findall")
-    public Iterable<PlanDeDeveloppement> findAllPlanDeDeveloppement(@PathVariable String matricule)
+    public Iterable<PlanDeDeveloppement> findAllPlanDeDeveloppement(@PathVariable Long id)
     {
-        return planDeDeveloppementService.findAllPlanDeDeveloppement(matricule);
+        return planDeDeveloppementService.findAllPlanDeDeveloppement(id);
 
 
     }

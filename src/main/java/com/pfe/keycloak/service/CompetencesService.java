@@ -1,10 +1,11 @@
 package com.pfe.keycloak.service;
 
+import com.pfe.keycloak.dto.CompetenceDto;
 import com.pfe.keycloak.model.Competences;
 
 import java.util.List;
 public interface CompetencesService {
-    Competences createCompetence(Competences competence);
+    Competences createCompetence(CompetenceDto competence);
     Competences getCompetenceById(Long id);
     List<Competences> getAllCompetences();
     Competences updateCompetence(Competences competence);

@@ -14,6 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PlanDeDeveloppementDto {
+    private Long id;
     private String code;
     private String objectif;
     private String actions;

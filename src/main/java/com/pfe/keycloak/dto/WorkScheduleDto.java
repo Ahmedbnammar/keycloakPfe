@@ -2,15 +2,16 @@ package com.pfe.keycloak.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.pfe.keycloak.model.Employee;
+import com.pfe.keycloak.model.Enum;
+import com.pfe.keycloak.model.Task;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
 import java.util.Date;
-import java.util.Map;
-
+import java.util.List;
 
 @Data
 @Builder
@@ -25,9 +26,13 @@ public class WorkScheduleDto {
 
     private Date workDate;
 
-    private Map<String, String> tasks;
+    private List<Task> tasks;
 
-    private String status;
+    private Enum.TaskStatus status;
+    private Enum.TaskComplexity complexity;
+    private int priority;
+    private Duration estimatedDuration;
+    private Duration actualDuration;
 
 
 }

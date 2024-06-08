@@ -16,9 +16,9 @@ public class PlanDeDeveloppementServiceImpl implements PlanDeDeveloppementServic
     @Autowired
     public EmployeeRepository employeeRepository;
     @Override
-    public PlanDeDeveloppement addPlanDeDeveloppement(String matricule, PlanDeDeveloppementDto planDeDeveloppement) {
-        Employee employee = employeeRepository.findByMatricule(matricule).orElseThrow(() ->
-                new RuntimeException("Employee not found for matricule: \"" + matricule + "\"")
+    public PlanDeDeveloppement addPlanDeDeveloppement(Long id, PlanDeDeveloppementDto planDeDeveloppement) {
+        Employee employee = employeeRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("Employee not found for matricule: \"" + id + "\"")
         );
         PlanDeDeveloppement planDeDeveloppement1 = new PlanDeDeveloppement();
         planDeDeveloppement1.setActions(planDeDeveloppement.getActions());
@@ -32,11 +32,11 @@ public class PlanDeDeveloppementServiceImpl implements PlanDeDeveloppementServic
     }
 
     @Override
-    public PlanDeDeveloppement updatePlanDeDeveloppement(String matricule, PlanDeDeveloppementDto planDeDeveloppement) {
-        Employee employee = employeeRepository.findByMatricule(matricule).orElseThrow(() ->
-                new RuntimeException("Employee not found for matricule: \"" + matricule + "\"")
+    public PlanDeDeveloppement updatePlanDeDeveloppement(Long id, PlanDeDeveloppementDto planDeDeveloppement) {
+        Employee employee = employeeRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("Employee not found for matricule: \"" + id + "\"")
         );
-        PlanDeDeveloppement planDeDeveloppement1 = employee.findPlanDeDeveloppementByCode(planDeDeveloppement.getCode());
+        PlanDeDeveloppement planDeDeveloppement1 = planDeDeveloppementRepository.findById(planDeDeveloppement.getId());
         planDeDeveloppement1.setActions(planDeDeveloppement.getActions());
         planDeDeveloppement1.setCode(planDeDeveloppement.getCode());
         planDeDeveloppement1.setDateFin(planDeDeveloppement.getDateFin());
@@ -57,9 +57,9 @@ public class PlanDeDeveloppementServiceImpl implements PlanDeDeveloppementServic
     }
 
     @Override
-    public Iterable<PlanDeDeveloppement> findAllPlanDeDeveloppement(String matricule) {
-        Employee employee = employeeRepository.findByMatricule(matricule).orElseThrow(() ->
-                new RuntimeException("Employee not found for matricule: \"" + matricule + "\"")
+    public Iterable<PlanDeDeveloppement> findAllPlanDeDeveloppement(Long id) {
+        Employee employee = employeeRepository.findById(id).orElseThrow(() ->
+                new RuntimeException("Employee not found for matricule: \"" + id + "\"")
         );
         return employee.getPlanDeDeveloppements();
     }

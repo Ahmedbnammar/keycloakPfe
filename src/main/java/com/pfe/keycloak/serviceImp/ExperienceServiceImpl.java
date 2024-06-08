@@ -23,9 +23,9 @@ public class ExperienceServiceImpl implements ExperienceService {
 
 
     @Override
-    public Experience addExperience(String matricule, ExperienceDto experience) {
-        Employee employee = employeeRepository.findByMatricule(matricule).orElseThrow(() ->
-                new ExpressionException("Employee not found for matricule: \"" + matricule + "\"")
+    public Experience addExperience(long id, ExperienceDto experience) {
+        Employee employee = employeeRepository.findById(id).orElseThrow(() ->
+                new ExpressionException("Employee not found for id: \"" + id + "\"")
         );
         Experience experience1 = new Experience();
         experience1.setCode(experience.getCode());
@@ -38,19 +38,17 @@ public class ExperienceServiceImpl implements ExperienceService {
     }
 
     @Override
-    public void removeExperience(String matricule, String code) {
-        Employee employee = employeeRepository.findByMatricule(matricule).orElseThrow(() ->
-                new ExpressionException("Employee not found for matricule: \"" + matricule + "\"")
-        );
-        employee.removeExperience(code);
+    public void removeExperience(long code) {
+        experienceRepository.deleteById(code);
     }
 
     @Override
-    public Experience updateExperience(String matricule, ExperienceDto experience) {
-        Employee employee = employeeRepository.findByMatricule(matricule).orElseThrow(() ->
-                new ExpressionException("Employee not found for matricule: \"" + matricule + "\"")
+    public Experience updateExperience(long id, ExperienceDto experience) {
+        Employee employee = employeeRepository.findById(id).orElseThrow(() ->
+                new ExpressionException("Employee not found for id: \"" + id + "\"")
         );
-        Experience experience1 = employee.findExperienceByCode(experience.getCode());
+
+        Experience experience1 = employee.findExperienceByCode(experience.getCode().trim());
         experience1.setCode(experience.getCode());
         experience1.setDateDebut(experience.getDateDebut());
         experience1.setDateFin(experience.getDateFin());
@@ -59,16 +57,16 @@ public class ExperienceServiceImpl implements ExperienceService {
     }
 
     @Override
-    public Experience findByCode(String code) {
-        return employeeRepository.findByMatricule(code).orElseThrow(() ->
-                new ExpressionException("Employee not found for matricule: \"" + code + "\"")
+    public Experience findByCode(long id,String code) {
+        return employeeRepository.findById(id).orElseThrow(() ->
+                new ExpressionException("Employee not found for Id: \"" + id + "\"")
         ).findExperienceByCode(code);
     }
 
     @Override
-    public List<Experience> findAll(String matricule) {
-        return employeeRepository.findByMatricule(matricule).orElseThrow(() ->
-                new ExpressionException("Employee not found for matricule: \"" + matricule + "\"")
+    public List<Experience> findAll(long id) {
+        return employeeRepository.findById(id).orElseThrow(() ->
+                new ExpressionException("Employee not found for id: \"" + id + "\"")
         ).getExperiences();
     }
 }

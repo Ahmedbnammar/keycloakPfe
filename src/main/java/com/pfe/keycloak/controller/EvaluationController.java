@@ -18,7 +18,6 @@ public class EvaluationController {
     private EvaluationService evaluationService;
 
     @PostMapping
-    @PreAuthorize("hasRole('HR')")
     public ResponseEntity<Evaluation> createEvaluation(@RequestBody EvaluationDto evaluation,
                                                        @PathVariable Long employeeId) {
         return ResponseEntity.ok(evaluationService.createEvaluation(evaluation, employeeId));

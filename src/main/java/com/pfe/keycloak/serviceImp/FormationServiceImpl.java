@@ -1,8 +1,10 @@
 package com.pfe.keycloak.serviceImp;
 
 import com.pfe.keycloak.dto.FormationDto;
+import com.pfe.keycloak.dto.PlanDeDeveloppementDto;
 import com.pfe.keycloak.model.Employee;
 import com.pfe.keycloak.model.Formation;
+import com.pfe.keycloak.model.PlanDeDeveloppement;
 import com.pfe.keycloak.repository.EmployeeRepository;
 import com.pfe.keycloak.repository.FormationRepository;
 import com.pfe.keycloak.service.FormationService;
@@ -23,9 +25,9 @@ public class FormationServiceImpl implements FormationService {
     public FormationRepository formationRepository;
 
     @Override
-    public Formation addFormation(String matricule, FormationDto formation) {
+    public Formation addFormation(Long matricule, FormationDto formation) {
 
-        Optional<Employee> optionalEmployee = employeeRepository.findByMatricule(matricule);
+        Optional<Employee> optionalEmployee = employeeRepository.findById(matricule);
 
         Employee employee = optionalEmployee.orElseThrow(() ->
                 new ExpressionException("Employee not found for matricule: \"" + matricule + "\"")
@@ -44,9 +46,11 @@ public class FormationServiceImpl implements FormationService {
 
     }
 
+
+
     @Override
-    public void removeFormation(String matricule, Long id) {
-        Optional<Employee> optionalEmployee = employeeRepository.findByMatricule(matricule);
+    public void removeFormation(Long id) {
+        Optional<Employee> optionalEmployee = employeeRepository.findById(id);
         optionalEmployee.ifPresent(employee -> {
             if(formationRepository.findById(id).isPresent()){
                 Formation for1 = formationRepository.findById(id).get();
@@ -60,7 +64,7 @@ public class FormationServiceImpl implements FormationService {
 
     @Override
     public Formation updateFormation( FormationDto formation) {
-        Formation formation1 = formationRepository.findByCode(formation.getCode()).orElseThrow(() ->
+        Formation formation1 = formationRepository.findById(formation.getId()).orElseThrow(() ->
                 new ExpressionException("Formation not found for Code formation : \"" + formation.getCode() + "\"")
         );
         formation1.setTitre(formation.getTitre());

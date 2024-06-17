@@ -13,6 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FormationDto {
+    private Long id;
     private String code;
     private String titre;
     private String description;
